@@ -163,3 +163,28 @@ var LKS92WGS84 = (function()
 
     return LKS92WGS84;
 })();
+
+
+// Load GeoJSON data
+fetch('geomap.json')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('GeoJSON data parsed successfully', data);
+        // Convert coordinates and add GeoJSON layer to the map
+        L.geoJSON(data, {
+            pointToLayer: function (feature, latlng) {
+                return L.marker(latlng); // Create a marker for each point
+            },
+            onEachFeature: function (feature, layer) {
+                if (feature.properties && feature.properties.PLACENAME) {
+                    layer.bindPopup(feature.properties.PLACENAME); // Bind popup to each marker
+                }
+            }
+        }).addTo(map);
+    })
+    .catch(error => console.error('Error loading GeoJSON data:', error));
