@@ -165,26 +165,35 @@ var LKS92WGS84 = (function()
 })();
 
 
-// Load GeoJSON data
-fetch('geomap.json')
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('GeoJSON data parsed successfully', data);
-        // Convert coordinates and add GeoJSON layer to the map
-        L.geoJSON(data, {
-            pointToLayer: function (feature, latlng) {
-                return L.marker(latlng); // Create a marker for each point
-            },
-            onEachFeature: function (feature, layer) {
-                if (feature.properties && feature.properties.PLACENAME) {
-                    layer.bindPopup(feature.properties.PLACENAME); // Bind popup to each marker
-                }
+// Define the projection transformation
+proj4.defs("EPSG:3059", "+proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=-6000000 +datum=WGS84 +units=m +no_defs");
+
+// Function to load and process GeoJSON data
+function loadGeoJSON(map) {
+    fetch('geomap.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
             }
-        }).addTo(map);
-    })
-    .catch(error => console.error('Error loading GeoJSON data:', error));
+            return response.json();
+        })
+        .then(data => {
+            data.features.forEach(feature => {
+                const coordinates = feature.geometry.coordinates;
+                const properties = feature.properties;
+
+                // Convert coordinates from EPSG:3059 to EPSG:4326 (LatLng)
+                const latLng = proj4('EPSG:3059', 'EPSG:4326', coordinates);
+
+                console.log('Original coordinates:', coordinates);
+                console.log('Converted coordinates:', latLng);
+
+                // Create a marker
+                const marker = L.marker([latLng[1], latLng[0]]).addTo(map);
+
+                // Bind a popup
+                marker.bindPopup(`<b>${properties.PLACENAME}</b>`);
+            });
+        })
+        .catch(error => console.error('Error loading the JSON data:', error));
+}

@@ -3,6 +3,8 @@
 <head>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.6.2/proj4.js"></script>
+    <script src="functions.js"></script>
     <style>
         #map { 
             position: absolute; 
@@ -29,31 +31,8 @@
             maxZoom: 19,
         }).addTo(map);
 
-        // Load GeoJSON data
-        fetch('geomap.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('GeoJSON data parsed successfully', data);
-                
-                // Add GeoJSON layer to the map
-                L.geoJSON(data, {
-                    pointToLayer: function (feature, latlng) {
-                        return L.marker(latlng); // Create a marker for each point
-                    },
-                    onEachFeature: function (feature, layer) {
-                        if (feature.properties && feature.properties.PLACENAME) {
-                            // Bind popup to each marker showing the PLACENAME and coordinates
-                            layer.bindPopup(feature.properties.PLACENAME + '<br>Coordinates: ' + feature.geometry.coordinates[1] + ', ' + feature.geometry.coordinates[0]);
-                        }
-                    }
-                }).addTo(map);
-            })
-            .catch(error => console.error('Error loading GeoJSON data:', error));
+        // Load and process GeoJSON data
+        loadGeoJSON(map);
     </script>
 </body>
 </html>
