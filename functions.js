@@ -164,11 +164,8 @@ var LKS92WGS84 = (function()
     return LKS92WGS84;
 })();
 
-
-// Define the projection transformation
 proj4.defs("EPSG:3059", "+proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=-6000000 +datum=WGS84 +units=m +no_defs");
 
-// Function to load and process GeoJSON data
 function loadGeoJSON(map) {
     fetch('geomap.json')
         .then(response => {
@@ -182,16 +179,13 @@ function loadGeoJSON(map) {
                 const coordinates = feature.geometry.coordinates;
                 const properties = feature.properties;
 
-                // Convert coordinates from EPSG:3059 to EPSG:4326 (LatLng)
                 const latLng = proj4('EPSG:3059', 'EPSG:4326', coordinates);
 
                 console.log('Original coordinates:', coordinates);
                 console.log('Converted coordinates:', latLng);
 
-                // Create a marker
                 const marker = L.marker([latLng[1], latLng[0]]).addTo(map);
 
-                // Bind a popup
                 marker.bindPopup(`<b>${properties.PLACENAME}</b>`);
             });
         })
